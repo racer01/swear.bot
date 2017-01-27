@@ -119,7 +119,7 @@ if __name__ == "__main__":
         # retrieve all users
         users = api_call.get('members')
     if slack_client.rtm_connect():
-        print("rcr.slackbot connected and running!")
+        print("swear.bot connected and running!")
         while True:
             try:
                 rtm_read = slack_client.rtm_read()
