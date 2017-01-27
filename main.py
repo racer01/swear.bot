@@ -6,6 +6,9 @@ import urllib
 import string
 import re
 
+from command import Command
+from commands import Commands
+
 # rcr.slackbot's ID as an environment variable
 BOT_ID = os.environ.get("SLACK_BOT_ID")
 
@@ -51,22 +54,12 @@ def parse_slack_output(slack_rtm_output):
     return None, None, None
 
 
-def parse_command(text, users, swear_db, user_db, channel):
-    commands = {"add": "pass",
-                "highscore": "print_highscore(users, user_db, channel)",
-                "swears": "print_swears(swear_db, channel)",
-                "help": "print_help(keywords, channel)"}
-    keywords = list(commands.keys())
-    keywords.sort()
-    command_regexify(commands)
-    fixed_add = AT_BOT + ' ' + "add" + ' "\w{1,64}" \d{1,}' + '|' + AT_BOT + ' ' + "add" + ' "\w{1,64}"'
-    commands[fixed_add] = commands.pop(command_regexify("add"))
-    print(commands)
+def parse_command(commands, text):
+    print(keywords)
     for command in commands:
-        if re.fullmatch(command, text):
-            exec(commands[command])
-            return
-    print("error")
+        if re.fullmatch(command.regex_name, text):
+            return command.command
+    return "Commands.error(keywords)"
 
 
 def count_swear(swear_db, message):
@@ -78,34 +71,7 @@ def count_swear(swear_db, message):
     return swear_counter
 
 
-def print_help(keywords, channel):
-    response = "Avaliable commands are *" + "*, *".join(keywords) + "*"
-    slack_client.api_call("chat.postMessage", channel=channel, text=response, as_user=True)
-
-
-def print_highscore(users, user_db, channel):
-    ordered_keys = sorted(user_db, key=user_db.get, reverse=True)
-    response = "Swear highscore:\n"
-    for key in ordered_keys:
-        for user in users:
-            if user["id"] == key:
-                response += "*{}*: {}\n".format(user["real_name"], user_db[key])
-                break
-    slack_client.api_call("chat.postMessage", channel=channel, text=response, as_user=True)
-
-
-def print_swears(swear_db, channel):
-    ordered_keys = sorted(swear_db)
-    response = "Registered *swears* are:\n>>> "
-    response += ", ".join(["*{}* ({})".format(key, swear_db[key]) for key in ordered_keys])
-    slack_client.api_call("chat.postMessage", channel=channel, text=response, as_user=True)
-
-
-def print_warning(user, users, user_db, channel):
-    first_name = ([u["real_name"] for u in users if u["id"] == user][0]).split(' ')[0]
-    response = ":bangbang: Hey *{}*! (<@{}>) :bangbang:\n".format(first_name, user)
-    response += "You sweared :zipper_mouth_face: and you should feel bad :point_up:. "
-    response += "You have *{}* point(s).".format(user_db[user])
+def print_message(response, channel):
     slack_client.api_call("chat.postMessage", channel=channel, text=response, as_user=True)
 
 
@@ -113,6 +79,11 @@ if __name__ == "__main__":
     READ_WEBSOCKET_DELAY = 0.5  # 0.5 second delay between reading from firehose
     swr_db = read_db("swear_db.txt")
     usr_db = read_db("user_db.txt")
+    commands = [Command("add", "pass", "", '{0} add "\w{{1,64}}" \d{{1,}}|{0} add "\w{{1,64}}"'.format(AT_BOT)),
+                Command("highscore", "Commands.highscore(users, usr_db)", "List users' profanity."),
+                Command("swears", "Commands.swears(swr_db)", "List all monitored swearwords."),
+                Command("help", "Commands.help(keywords)", "Show this help message.")]
+    keywords = {command.name: command.description for command in commands}
 
     api_call = slack_client.api_call("users.list")
     if api_call.get('ok'):
@@ -133,7 +104,8 @@ if __name__ == "__main__":
                                           attachments=[{"fallback": "Deal with it!",
                                                         "image_url": "http://i.imgur.com/9PO2N1V.jpg"}])
                 elif text.startswith(AT_BOT):
-                    parse_command(text, users, swr_db, usr_db, channel)
+                    # parse_command(text, users, swr_db, usr_db, channel)
+                    exec("print_message({}, channel)".format(parse_command(commands, text)))
                 swear_val = count_swear(swr_db, text)
                 if swear_val:
                     if user in usr_db:
@@ -141,7 +113,7 @@ if __name__ == "__main__":
                     else:
                         usr_db[user] = swear_val
                     write_db("user_db.txt", usr_db)
-                    print_warning(user, users, usr_db, channel)
+                    print_message(Commands.warning(user, users, usr_db), channel)
             time.sleep(READ_WEBSOCKET_DELAY)
     else:
         print("Connection failed. Invalid Slack token or bot ID?")
