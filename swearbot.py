@@ -136,7 +136,7 @@ if __name__ == "__main__":
                     parse_command(text, users, swr_db, usr_db, channel)
                 else:
                     swear_val = count_swear(swr_db, text)
-                    if swear_val or "swearshow" in text:
+                    if swear_val:
                         if user in usr_db:
                             usr_db[user] += swear_val
                         else:
