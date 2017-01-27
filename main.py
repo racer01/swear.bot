@@ -103,7 +103,7 @@ def print_swears(swear_db, channel):
 
 def print_warning(user, users, user_db, channel):
     first_name = ([u["real_name"] for u in users if u["id"] == user][0]).split(' ')[0]
-    response = ':bangbang: Hey *{}*! (<@{}>) :bangbang:\n'.format(first_name, user)
+    response = ":bangbang: Hey *{}*! (<@{}>) :bangbang:\n".format(first_name, user)
     response += "You sweared :zipper_mouth_face: and you should feel bad :point_up:. "
     response += "You have *{}* point(s).".format(user_db[user])
     slack_client.api_call("chat.postMessage", channel=channel, text=response, as_user=True)
@@ -119,7 +119,7 @@ if __name__ == "__main__":
         # retrieve all users
         users = api_call.get('members')
     if slack_client.rtm_connect():
-        print("rcr.slackbot connected and running!")
+        print("swear.bot connected and running!")
         while True:
             try:
                 rtm_read = slack_client.rtm_read()
@@ -134,15 +134,14 @@ if __name__ == "__main__":
                                                         "image_url": "http://i.imgur.com/9PO2N1V.jpg"}])
                 elif text.startswith(AT_BOT):
                     parse_command(text, users, swr_db, usr_db, channel)
-                else:
-                    swear_val = count_swear(swr_db, text)
-                    if swear_val or "swearshow" in text:
-                        if user in usr_db:
-                            usr_db[user] += swear_val
-                        else:
-                            usr_db[user] = swear_val
-                        write_db("user_db.txt", usr_db)
-                        print_warning(user, users, usr_db, channel)
+                swear_val = count_swear(swr_db, text)
+                if swear_val:
+                    if user in usr_db:
+                        usr_db[user] += swear_val
+                    else:
+                        usr_db[user] = swear_val
+                    write_db("user_db.txt", usr_db)
+                    print_warning(user, users, usr_db, channel)
             time.sleep(READ_WEBSOCKET_DELAY)
     else:
         print("Connection failed. Invalid Slack token or bot ID?")
