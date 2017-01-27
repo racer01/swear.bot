@@ -103,7 +103,7 @@ def print_swears(swear_db, channel):
 
 def print_warning(user, users, user_db, channel):
     first_name = ([u["real_name"] for u in users if u["id"] == user][0]).split(' ')[0]
-    response = ':bangbang: Hey *{}*! (<@{}>) :bangbang:\n'.format(first_name, user)
+    response = ":bangbang: Hey *{}*! (<@{}>) :bangbang:\n".format(first_name, user)
     response += "You sweared :zipper_mouth_face: and you should feel bad :point_up:. "
     response += "You have *{}* point(s).".format(user_db[user])
     slack_client.api_call("chat.postMessage", channel=channel, text=response, as_user=True)
