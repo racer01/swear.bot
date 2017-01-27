@@ -101,4 +101,6 @@ swear_db.txt
 user_db.txt
 
 # swear.bot DEBUG
+env_check.py
 print_bot_id.py
+test_bot.py
