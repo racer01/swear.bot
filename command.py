@@ -1,18 +1,14 @@
-import os
+from config import Config
 
 
 class Command:
-    # swear.bot's ID as an environment variable
-    BOT_ID = os.environ.get("SLACK_BOT_ID")
-    # constants
-    AT_BOT = "<@" + BOT_ID + ">"
 
     def __init__(self, name, command, description, regex_name=None):
         self.name = name
         self.command = command
-        self.regex_name = regex_name or self.command_regexify
         self.description = description
+        self.regex_name = regex_name or self._regexified_name
 
     @property
-    def command_regexify(self):
-        return "{} {}".format(self.AT_BOT, self.name)
+    def _regexified_name(self):
+        return "{} {}".format(Config.AT_BOT, self.name)
