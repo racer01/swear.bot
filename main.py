@@ -56,7 +56,7 @@ if __name__ == "__main__":
     usr_db = DB("user_db.txt")
     commands = [Command("add", "Commands.add(text, user, usernames[user], swr_db)",
                         'Add a word to the swear database. Usage: `@bot add "wordtoadd" [0..3]`',
-                        '{0} add "\w{{1,64}}" \d{{1,}}|{0} add "\w{{1,64}}"'.format(Config.AT_BOT)),
+                        '{0} add ".{{1,64}}" -?\d{{1,}}|{0} add ".{1,64}}"'.format(Config.AT_BOT)),
                 Command("highscore", "Commands.highscore(usernames, usr_db)", "List users' profanity."),
                 Command("swears", "Commands.swears(swr_db)", "List all monitored swearwords."),
                 Command("help", "Commands.help(keywords)", "Show this help message."),
