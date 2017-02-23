@@ -78,6 +78,10 @@ if __name__ == "__main__":
                 rtm_read = slack_client.rtm_read()
             except TimeoutError:
                 print("Caught a timeout")
+                continue
+            except ConnectionError:
+                print("Caught a connection error")
+                continue
             channel, user, text = parse_slack_output(rtm_read)
             response_text, response_image = "", ""
             if user and text:
